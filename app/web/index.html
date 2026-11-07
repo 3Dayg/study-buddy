@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyBuddy — Your AI Study Tutor</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" id="homeLink">
+      <span class="logo">📚</span>
+      <span>StudyBuddy</span>
+    </div>
+    <nav id="nav" class="nav hidden">
+      <button data-view="dashboard" class="navbtn">Dashboard</button>
+      <button data-view="plan" class="navbtn">Study Plan</button>
+      <button data-view="review" class="navbtn">Review <span id="dueBadge" class="badge hidden">0</span></button>
+      <button data-view="adapt" class="navbtn">Adapt</button>
+      <button id="switchPlan" class="navbtn ghost">Switch plan</button>
+    </nav>
+  </header>
+
+  <main id="app"></main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Templates are rendered by app.js -->
+  <script src="/app.js"></script>
+</body>
+</html>
