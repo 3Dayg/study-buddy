@@ -17,21 +17,45 @@ and **adapts the plan** based on how you actually perform.
 
 ## Quick start
 
-No dependencies to install — it runs on the Python standard library alone
-(Python 3.10+).
+There are two frontends: a **React (Vite)** app and a **zero-build vanilla** app.
+The Python backend has no third-party dependencies (Python 3.10+).
+
+### Option A — React UI (recommended)
 
 ```bash
-./run.sh
-# or:  python3 -m app.server
+# 1. start the API (Python stdlib only)
+python3 -m app.server            # http://127.0.0.1:8000
+
+# 2. in another terminal, run the React dev server
+cd frontend
+npm install
+npm run dev                      # http://localhost:5173 (proxies /api -> :8000)
 ```
 
-Then open **http://127.0.0.1:8000** in your browser.
+Open **http://localhost:5173**.
+
+To ship it as one server, build the React app and let Python serve it:
+
+```bash
+cd frontend && npm run build     # emits to app/web_dist/
+cd .. && python3 -m app.server   # auto-serves the React build at :8000
+```
+
+### Option B — No Node, just Python
+
+```bash
+./run.sh            # or: python3 -m app.server
+```
+
+Open **http://127.0.0.1:8000** — the server falls back to the dependency-free
+vanilla frontend in `app/web/` when no React build is present.
 
 ## Features
 
 | Feature | What it does |
 |---|---|
 | 🎯 **Personalized plan** | Packs topics into daily sessions within your time budget, produces weekly milestones and a projected completion date, and flags whether you'll hit your deadline. |
+| 📅 **Study calendar** | A month-grid calendar lays out every study day, pins your weekly milestones (🏁), projected finish (🎓) and deadline (⏰) to their dates, colors days by completion, and lets you click a day to jump into a lesson. A compact version lives on the dashboard. |
 | 📖 **Lessons** | Each topic is taught as structured sections + worked examples, following a concept → example → check-for-understanding → recall loop. |
 | 📝 **Quizzes** | Multiple-choice questions with instant grading and explanations. Answers are checked server-side (never sent to the client). |
 | 🔁 **Flashcards (FSRS)** | A faithful implementation of the **FSRS** spaced-repetition scheduler decides exactly when each card is next due, based on your recall (Again / Hard / Good / Easy). |
@@ -40,8 +64,9 @@ Then open **http://127.0.0.1:8000** in your browser.
 
 ## Architecture
 
-Zero third-party dependencies. Backend is Python stdlib (`http.server` + `sqlite3`);
-frontend is vanilla HTML/CSS/JS served by the backend. The whole thing runs offline.
+The backend has **zero third-party dependencies** — Python stdlib (`http.server` +
+`sqlite3`). The React frontend uses Vite + React 18. The server serves the compiled
+React app from `app/web_dist/` when present, otherwise the vanilla app in `app/web/`.
 
 ```
 app/
@@ -54,11 +79,19 @@ app/
 │   ├── planner.py         # day-by-day plan + milestones + adaptive re-planning
 │   ├── fsrs.py            # FSRS spaced-repetition scheduler (pure Python)
 │   └── progress.py        # progress aggregation + retention estimation
-└── web/                   # index.html, styles.css, app.js (SPA, no build step)
+├── web/                   # zero-build vanilla SPA (fallback, no Node needed)
+└── web_dist/              # compiled React app (created by `npm run build`, gitignored)
+frontend/                  # React + Vite source (the primary UI)
+├── src/components/Calendar.jsx   # the month-grid study calendar
+├── src/views/             # Onboard, Dashboard, Plan, CalendarView, Topic, Review, Adapt
+└── ...                    # see frontend/README.md
 tests/
 ├── test_fsrs.py           # unit tests for the scheduling algorithm
 └── test_api.py            # full end-to-end API integration test
 ```
+
+Both frontends talk to the same REST API, so the calendar and every other feature
+are available in either. See `frontend/README.md` for the React app details.
 
 ### A note on "AI-powered"
 

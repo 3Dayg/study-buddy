@@ -2,7 +2,8 @@
 StudyBuddy HTTP server — pure Python stdlib (http.server), no frameworks.
 
 Serves a JSON REST API under /api/* and the static single-page frontend from
-app/web/. Run with:  python -m app.server   (or python app/server.py)
+the React build in app/web_dist/ if present, else the vanilla app/web/.
+Run with:  python -m app.server   (or python app/server.py)
 """
 
 from __future__ import annotations
@@ -21,7 +22,21 @@ from app.engine import planner as planner_engine
 from app.engine import progress as progress_engine
 from app.engine.fsrs import FSRS, CardState
 
-WEB_DIR = os.path.join(os.path.dirname(__file__), "web")
+def _resolve_web_dir():
+    """Prefer the built React app (app/web_dist) if present; otherwise serve the
+    zero-build vanilla frontend (app/web). This lets the app run with just Python
+    OR as the compiled React SPA after `npm run build`."""
+    here = os.path.dirname(__file__)
+    override = os.environ.get("STUDYBUDDY_WEB_DIR")
+    if override and os.path.isdir(override):
+        return override
+    dist = os.path.join(here, "web_dist")
+    if os.path.isfile(os.path.join(dist, "index.html")):
+        return dist
+    return os.path.join(here, "web")
+
+
+WEB_DIR = _resolve_web_dir()
 fsrs = FSRS()
 
 # (method, compiled-regex) -> handler
